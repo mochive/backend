@@ -50,9 +50,13 @@ export default function (request: Request<{
 		.$if(true, function (queryBuilder: SelectQueryBuilder<Database, 'test', Test>): SelectQueryBuilder<Database, 'test', Test> {
 			if(typeof(condition) === 'string') {
 				return queryBuilder.where('test.id', 'in', sql.raw(condition))
-				.orderBy(sql.raw('FIELD(test.id,' + condition + ')'));
+				.orderBy(sql.raw('FIELD(test.id,' + condition + ')'))
+				.orderBy('test.grade', 'asc')
+				.orderBy('test.subject', 'asc');
 			} else {
-				return queryBuilder.orderBy('test.id', request['query']['page[order]'] === 'asc' ? 'asc' : 'desc')
+				return queryBuilder.orderBy('test.taken_at', request['query']['page[order]'] === 'asc' ? 'asc' : 'desc')
+				.orderBy('test.grade', 'asc')
+				.orderBy('test.subject', 'asc')
 				.limit(request['query']['page[size]'])
 				.offset(request['query']['page[size]'] * request['query']['page[index]']);
 			}
