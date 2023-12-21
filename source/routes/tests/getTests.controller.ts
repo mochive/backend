@@ -7,13 +7,16 @@ import { SelectQueryBuilder, sql } from 'kysely';
 
 export default function (request: Request<{
 	query: PageQuery & {
-		years?: string;
 		months?: string;
 		grades?: string;
 		subjects?: string;
+		startAt?: string;
+		endAt?: string;
 		query?: string;
 	};
 }>, response: Response): Promise<void> {
+	let startAt: number;
+
 	return (typeof(request['query']['query']) === 'string' ? elasticsearch.search({
 		index: 'test',
 		size: request['query']['page[size]'],
@@ -54,27 +57,27 @@ export default function (request: Request<{
 				.offset(request['query']['page[size]'] * request['query']['page[index]']);
 			}
 		})
-		.$if(typeof(request['query']['years']) === 'string', function (queryBuilder: SelectQueryBuilder<Database, 'test', Test>): SelectQueryBuilder<Database, 'test', Test> {
-			const currentYear: number = (new Date()).getFullYear();
-			let currentIndex: number = (request['query']['years'] as string).indexOf(',');
-			let year: number = Number((request['query']['years'] as string).slice(0, currentIndex !== -1 ? currentIndex : undefined));
-			const years: number[] = [year];
-			let lastIndex: number = currentIndex + 1;
-
-			while(lastIndex !== 0) {
-				if(year >= 2006 && year <= currentYear) {
-					currentIndex = (request['query']['years'] as string).indexOf(',', lastIndex);
-					year = Number((request['query']['years'] as string).slice(lastIndex,  currentIndex !== -1 ? currentIndex : undefined));
-
-					years.push(year);
-
-					lastIndex = currentIndex + 1;
-				} else {
-					throw new BadRequest('Query[\'years\'] must be valid');
-				}
-			}
+		.$if(typeof(request['query']['startAt']) === 'string', function (queryBuilder: SelectQueryBuilder<Database, 'test', Test>): SelectQueryBuilder<Database, 'test', Test> {
+			startAt = Number(request['query']['startAt']);
 			
-			return queryBuilder.where(sql.raw<number>('YEAR(taken_at)'), 'in', years);
+			if(startAt >= 2006) {
+				return queryBuilder.where(sql.raw('YEAR(taken_at)'), '>=', request['query']['startAt']);
+			} else {
+				throw new BadRequest('Query[\'startAt\'] must be valid');
+			}
+		})
+		.$if(typeof(request['query']['endAt']) === 'string', function (queryBuilder: SelectQueryBuilder<Database, 'test', Test>): SelectQueryBuilder<Database, 'test', Test> {
+			const endAt: number = Number(request['query']['endAt']);
+			
+			if(endAt <= (new Date()).getFullYear()) {
+				if(typeof(startAt) !== 'number' || endAt >= startAt) {
+					return queryBuilder.where(sql.raw('YEAR(taken_at)'), '<=', request['query']['endAt']);
+				} else {
+					throw new BadRequest('Query[\'startAt\'] must be valid');
+				}
+			} else {
+				throw new BadRequest('Query[\'endAt\'] must be valid');
+			}
 		})
 		.$if(typeof(request['query']['months']) === 'string', function (queryBuilder: SelectQueryBuilder<Database, 'test', Test>): SelectQueryBuilder<Database, 'test', Test> {
 			return queryBuilder.where('test.month', 'in', getQueryArray(request['query']['months'] as string) as Test['month'][]);

@@ -20,11 +20,6 @@ export default new Module([{
 					maximum: 128,
 					isOptional: true
 				},
-				years: {
-					type: SchemaType['STRING'],
-					pattern: /^([1-9][0-9]{3},)*[1-9][0-9]{3}$/,
-					isOptional: true
-				},
 				months: {
 					type: SchemaType['STRING'],
 					pattern: /^(([34679]|10|11),)*([34679]|10|11)$/,
@@ -38,6 +33,16 @@ export default new Module([{
 				subjects: {
 					type: SchemaType['STRING'],
 					pattern: /^([1-8],)*[1-8]$/,
+					isOptional: true
+				},
+				startAt: {
+					type: SchemaType['STRING'],
+					pattern: /^([1-9][0-9]{3},)*[1-9][0-9]{3}$/,
+					isOptional: true
+				},
+				endAt: {
+					type: SchemaType['STRING'],
+					pattern: /^([1-9][0-9]{3},)*[1-9][0-9]{3}$/,
 					isOptional: true
 				}
 			} as const, pageSchema)
