@@ -59,6 +59,7 @@ export default class Server extends _Server {
 			if(typeof(data) !== 'undefined') {
 				this.setHeader('Content-Type', (isFormatted ? 'application/json' : 'text/plain') + ';charset=utf-8');
 				this.setHeader('Content-Length', Buffer.byteLength(data as string));
+				this.setHeader('Access-Control-Allow-Origin', '*');
 				this.write(data);
 			}
 
