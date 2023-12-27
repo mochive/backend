@@ -14,7 +14,7 @@ export default new Module([{
 		query: {
 			type: SchemaType['OBJECT'],
 			properties: Object.assign({
-				query: {
+				term: {
 					type: SchemaType['STRING'],
 					minimum: 1,
 					maximum: 128,

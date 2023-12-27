@@ -12,12 +12,12 @@ export default function (request: Request<{
 		subjects?: string;
 		startAt?: string;
 		endAt?: string;
-		query?: string;
+		term?: string;
 	};
 }>, response: Response): Promise<void> {
 	let startAt: number;
 
-	return (typeof(request['query']['query']) === 'string' ? elasticsearch.search({
+	return (typeof(request['query']['term']) === 'string' ? elasticsearch.search({
 		index: 'test',
 		size: request['query']['page[size]'],
 		from: request['query']['page[size]'] * request['query']['page[index]'],
@@ -25,7 +25,7 @@ export default function (request: Request<{
 		min_score: 1,
 		query: {
 			multi_match: {
-				query: request['query']['query'],
+				query: request['query']['term'],
 				fields: ['title', 'title.nori^0.9', 'title.ngram^0.7', 'content^0.5', 'content.nori^0.45']
 			}
 		}
