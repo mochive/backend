@@ -23,6 +23,7 @@ export default {
 		maximum: 48
 	},
 	question: commonSchema['path'],
+	answer: commonSchema['path'],
 	commentary: commonSchema['path'],
 	takenAt: {
 		type: SchemaType['STRING'],
