@@ -189,6 +189,7 @@ export interface Database {
 		subject: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8; // Backward compatibility for EBSi
 		name: string;
 		question: string;
+		answer: string | null;
 		commentary: string;
 		taken_at: Date;
 	};
@@ -215,6 +216,7 @@ export interface Test {
 	subject: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 	name: string;
 	question: string;
+	answer: string | null;
 	commentary: string;
 	takenAt: Date;
 }

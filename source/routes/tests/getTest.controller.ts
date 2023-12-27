@@ -11,12 +11,13 @@ export default function (request: Request<{
 }>, response: Response): Promise<void> {
 	return kysely.transaction()
 	.execute(function (transaction: Transaction<Database>): Promise<void> {
-		let test: Test & {
+		let test: Omit<Test, 'answer'> & {
+			answer?: NoneNullable<Test['answer']>;
 			listening?: Pick<TestListening, 'id' | 'audio' | 'script'>;
 		};
 
 		return transaction.selectFrom('test')
-		.select(['test.id', 'test.month', 'test.grade', 'test.subject', 'test.name', 'test.question', 'test.commentary', 'test.taken_at as takenAt'])
+		.select(['test.id', 'test.month', 'test.grade', 'test.subject', 'test.name', 'test.question', 'test.answer', 'test.commentary', 'test.taken_at as takenAt'])
 		.where('test.id', '=', request['parameter']['testId'])
 		.leftJoin('test_listening as listening', 'test.id', 'listening.test_id')
 		.select(['listening.id as listening_id', 'listening.audio as listening_audio', 'listening.script as listening_script'])
@@ -30,17 +31,15 @@ export default function (request: Request<{
 					subject: rawTest['subject'],
 					name: rawTest['name'],
 					question: rawTest['question'],
+					answer: rawTest['answer'] !== null ? rawTest['answer'] : undefined,
 					commentary: rawTest['commentary'],
-					takenAt: rawTest['takenAt']
-				};
-	
-				if(typeof(rawTest['listening_id']) === 'number') {
-					test['listening'] = {
+					takenAt: rawTest['takenAt'],
+					listening: typeof(rawTest['listening_id']) === 'number' ? {
 						id: rawTest['listening_id'],
 						audio: rawTest['listening_audio'] as string,
 						script: rawTest['listening_script']
-					};
-				}
+					} : undefined
+				};
 	
 				return transaction.selectFrom('test_rankcut')
 				.select(['id', 'grade', 'original_score as originalScore', 'standard_score as standardScore', 'percentile'])
@@ -55,7 +54,8 @@ export default function (request: Request<{
 			response.send(Object.assign(test, {
 				takenAt: getFullDate(test['takenAt']),
 				rankcuts: rankcuts
-			}) satisfies Omit<Test, 'takenAt'> & {
+			}) satisfies Omit<Test, 'answer' | 'takenAt'> & {
+				answer?: NoneNullable<Test['answer']>;
 				takenAt: string;
 				listening?: Pick<TestListening, 'id' | 'audio' | 'script'>;
 				rankcuts?: Pick<TestRankcut, 'id' | 'grade' | 'originalScore' | 'standardScore' | 'percentile'>[];

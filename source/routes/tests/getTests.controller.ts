@@ -45,7 +45,7 @@ export default function (request: Request<{
 	}) : Promise.resolve() as Promise<string | undefined>)
 	.then(function (condition: string | undefined): Promise<(Test & Nullable<PrefixPick<TestListening, 'listening_', 'id' | 'audio' | 'script'>>)[]> {
 		return kysely.selectFrom('test')
-		.select(['test.id', 'test.month', 'test.grade', 'test.subject', 'test.name', 'test.question', 'test.commentary', 'test.taken_at as takenAt'])
+		.select(['test.id', 'test.month', 'test.grade', 'test.subject', 'test.name', 'test.question', 'test.answer', 'test.commentary', 'test.taken_at as takenAt'])
 		// I'm too lazy
 		.$if(true, function (queryBuilder: SelectQueryBuilder<Database, 'test', Test>): SelectQueryBuilder<Database, 'test', Test> {
 			if(typeof(condition) === 'string') {
@@ -97,7 +97,8 @@ export default function (request: Request<{
 		.execute();
 	})
 	.then(function (rawTests: (Test & Nullable<PrefixPick<TestListening, 'listening_', 'id' | 'audio' | 'script'>>)[]): void {
-		const tests: (Omit<Test, 'takenAt'> & {
+		const tests: (Omit<Test, 'answer' | 'takenAt'> & {
+			answer?: NoneNullable<Test['answer']>;
 			takenAt: string;
 			listening?: Pick<TestListening, 'id' | 'audio' | 'script'>;
 		})[] = [];
@@ -110,6 +111,7 @@ export default function (request: Request<{
 				subject: rawTests[i]['subject'],
 				name: rawTests[i]['name'],
 				question: rawTests[i]['question'],
+				answer: rawTests[i]['answer'] !== null ? rawTests[i]['answer'] as string : undefined,
 				commentary: rawTests[i]['commentary'],
 				takenAt: getFullDate(rawTests[i]['takenAt'])
 			} as const, typeof(rawTests[i]['listening_id']) === 'number' ? {
