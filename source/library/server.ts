@@ -386,7 +386,7 @@ export default class Server extends _Server {
 			try {
 				Object.assign(request, {
 					startTime: Date.now(),
-					ip: typeof(this['isProxied'] && request['headers']['x-forward-for']) === 'string' ? request['headers']['x-forward-for'] : request['socket']['remoteAddress'],
+					ip: this['isProxied'] && typeof(request['headers']['x-forward-for']) === 'string' ? request['headers']['x-forward-for'] : request['socket']['remoteAddress'],
 					server: this,
 					header: request['headers']
 				});
